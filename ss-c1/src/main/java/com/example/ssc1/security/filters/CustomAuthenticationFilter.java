@@ -4,6 +4,7 @@ import com.example.ssc1.entities.Otp;
 import com.example.ssc1.repositories.OtpRepository;
 import com.example.ssc1.security.authentication.CustomOtpAuthentication;
 import com.example.ssc1.security.authentication.CustomUsernameAuthentication;
+import com.example.ssc1.security.managers.TokenManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,9 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     OtpRepository otpRepository;
 
+    @Autowired
+    private TokenManager tokenManager;
+
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 
@@ -46,7 +50,10 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
         } else {
             Authentication a = new CustomOtpAuthentication(username, otp);
             authenticationManager.authenticate(a);
-            response.setHeader("Authorization", UUID.randomUUID().toString());
+
+            var token = UUID.randomUUID().toString();
+            tokenManager.add(token);
+            response.setHeader("Authorization", token);
         }
     }
 
